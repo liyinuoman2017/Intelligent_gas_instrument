@@ -66,24 +66,24 @@ Function
 extern LCD_HandleTypeDef LCDHandle;
 void diaplay_test(void)
 {
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER0, 0, 0);
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER2, 0, 0);
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER4, 0, 0);  
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER6, 0, 0); 
-		HAL_LCD_UpdateDisplayRequest(&LCDHandle);
-		
-		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_RESET);
-		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)at_buff,4);
-		HAL_Delay(300);
-		
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER0, 0, 0xfff);
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER2, 0, 0xfff);
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER4, 0, 0xfff); 
-		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER6, 0, 0xfff); 
-		HAL_LCD_UpdateDisplayRequest(&LCDHandle);		
-		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_SET);
-		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)at_buff,4);
-		HAL_Delay(300);
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER0, 0, 0);
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER2, 0, 0);
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER4, 0, 0);  
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER6, 0, 0); 
+//		HAL_LCD_UpdateDisplayRequest(&LCDHandle);
+//		
+//		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_RESET);
+//		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)at_buff,4);
+//		HAL_Delay(300);
+//		
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER0, 0, 0xfff);
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER2, 0, 0xfff);
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER4, 0, 0xfff); 
+//		HAL_LCD_Write(&LCDHandle, LCD_RAM_REGISTER6, 0, 0xfff); 
+//		HAL_LCD_UpdateDisplayRequest(&LCDHandle);		
+//		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_SET);
+//		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)at_buff,4);
+//		HAL_Delay(300);
 }
 /***********************************************************************************************************
 * @√Ë ˆ	: 

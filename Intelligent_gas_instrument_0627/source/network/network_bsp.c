@@ -18,7 +18,7 @@ Includes
 */
 #include "stm32l0xx_hal.h"
 #include "network_bsp.h"
-
+#include "string.h"
 /*
 *********************************************************************************************************
 Define
@@ -37,35 +37,46 @@ Typedef
 Variables
 *********************************************************************************************************
 */
+UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
+/* USART1 init function */
+uint8_t rx_buff[RX_BUFF_LENGTH];
+uint8_t rx_length;
 
+read_frame_t nb_read=
+{
+	.read_length =0,
+};
 /*
 *********************************************************************************************************
 Function 
 *********************************************************************************************************
 */
-
-static void Error_Handler(void)
-{
-  /* Infinite loop */
-  while(1)
-  {
-  }
-}
+void Error_Handler(void);
 
 /***********************************************************************************************************
 * @描述	: 
 ***********************************************************************************************************/
-UART_HandleTypeDef huart1;
-DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart1_tx;
-/* USART1 init function */
- uint8_t test_buff[20];
-
+read_frame_t *read_nb_data(void)
+{
+	return &nb_read;
+}
+/***********************************************************************************************************
+* @描述	: 
+***********************************************************************************************************/
+void send_nb_data(uint8_t *buff,uint8_t length)
+{
+	HAL_UART_Transmit_IT(&huart1, buff,length);
+}
+/***********************************************************************************************************
+* @描述	: 
+***********************************************************************************************************/
 void uart_init(void)
 {
  
   huart1.Instance        = USART1;
-  huart1.Init.BaudRate   = 9600;
+  huart1.Init.BaudRate   = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits   = UART_STOPBITS_1;
   huart1.Init.Parity     = UART_PARITY_NONE;
@@ -75,25 +86,23 @@ void uart_init(void)
   if(HAL_UART_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
-  }
-  
+  } 
 	//开启空闲中断
 	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 	__HAL_UART_ENABLE_IT(&huart1,UART_IT_IDLE);
 	 
 	//设置DMA接收缓冲区及长度，接收长度应大于最大报文长度
-	HAL_UART_Receive_DMA(&huart1,test_buff,20); 
+	HAL_UART_Receive_DMA(&huart1,rx_buff,RX_BUFF_LENGTH); 
 }
- 
+/***********************************************************************************************************
+* @描述	: 
+***********************************************************************************************************/ 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
  
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(uartHandle->Instance==USART1)
   {
-  /* USER CODE BEGIN USART1_MspInit 0 */
- 
-  /* USER CODE END USART1_MspInit 0 */
     /* USART1 clock enable */
     __HAL_RCC_USART1_CLK_ENABLE();
    /* Enable DMA1 clock */
@@ -129,55 +138,20 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
  
     __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart1_rx);
 	
-/*
-  DmaHandle.Instance                 = DMA1_Channel1;
-  DmaHandle.Init.Direction           = DMA_PERIPH_TO_MEMORY;
-  DmaHandle.Init.PeriphInc           = DMA_PINC_DISABLE;
-  DmaHandle.Init.MemInc              = DMA_MINC_ENABLE;
-  DmaHandle.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-  DmaHandle.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-  DmaHandle.Init.Mode                = DMA_CIRCULAR;
-  DmaHandle.Init.Priority            = DMA_PRIORITY_MEDIUM;
-  DmaHandle.Init.Request             = DMA_REQUEST_0;	
-	*/	
-
- 
-//    /* USART1_TX Init */
-//    hdma_usart1_tx.Instance = DMA1_Stream1;
-//    hdma_usart1_tx.Init.Request = DMA_REQUEST_USART1_TX;
-//    hdma_usart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-//    hdma_usart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-//    hdma_usart1_tx.Init.MemInc = DMA_MINC_ENABLE;
-//    hdma_usart1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-//    hdma_usart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-//    hdma_usart1_tx.Init.Mode = DMA_NORMAL;
-//    hdma_usart1_tx.Init.Priority = DMA_PRIORITY_MEDIUM;
-//    hdma_usart1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-//    if (HAL_DMA_Init(&hdma_usart1_tx) != HAL_OK)
-//    {
-//      Error_Handler();
-//    }
-// 
-//    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
- 
     /* USART1 interrupt Init */
     HAL_NVIC_SetPriority(USART1_IRQn, 2, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspInit 1 */
- 
-  /* USER CODE END USART1_MspInit 1 */
+
   }
 }
-
-
+/***********************************************************************************************************
+* @描述	: 
+***********************************************************************************************************/
 void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 {
  
   if(uartHandle->Instance==USART1)
   {
-  /* USER CODE BEGIN USART1_MspDeInit 0 */
- 
-  /* USER CODE END USART1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART1_CLK_DISABLE();
  
@@ -193,27 +167,28 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
  
     /* USART1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspDeInit 1 */
- 
-  /* USER CODE END USART1_MspDeInit 1 */
   }
 }
-
-uint8_t test_length=0;
+/***********************************************************************************************************
+* @描述	: 
+***********************************************************************************************************/
 void USART1_IRQHandler(void)
 {
     if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET)  // 空闲中断标记被置位
     {
-        __HAL_UART_CLEAR_IDLEFLAG(&huart1);  // 清除中断标记
-
-
-		
-			test_length = 20 - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
-			 
-			HAL_UART_DMAStop(&huart1);//停止DMA，为了重新设置DMA发送多少数据
-			
-			//HAL_UART_Transmit_DMA(&huart1, (uint8_t *)pData, Len);
-			HAL_UART_Receive_DMA(&huart1, (uint8_t *)test_buff, 20);		
+		// 清除中断标记
+		__HAL_UART_CLEAR_IDLEFLAG(&huart1);  
+		//读取数据长度
+		nb_read.read_length = RX_BUFF_LENGTH - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
+		//清空数据
+		memset(nb_read.read_buff, 0, RX_BUFF_LENGTH);		
+		//拷贝数据
+		memcpy(nb_read.read_buff, rx_buff, nb_read.read_length);
+		memset(rx_buff, 0, RX_BUFF_LENGTH);
+		//停止DMA
+		HAL_UART_DMAStop(&huart1);
+		//重新设置DMA
+		HAL_UART_Receive_DMA(&huart1, (uint8_t *)rx_buff, RX_BUFF_LENGTH);		
 		
     }
     else 

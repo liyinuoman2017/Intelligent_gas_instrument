@@ -39,3 +39,4 @@
 ..\output\network_bsp.o: ..\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_usart.h
 ..\output\network_bsp.o: ..\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_usart_ex.h
 ..\output\network_bsp.o: ..\source\network\network_bsp.h
+..\output\network_bsp.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
